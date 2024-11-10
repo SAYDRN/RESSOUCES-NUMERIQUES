@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphique Loi d'Ohm avec Slider</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #fff1f9;
+      flex-direction: column;
+    }
+    canvas {
+      border: 1px solid black;
+      margin-top: 10px;
+    }
+    .controls {
+      margin-top: 30px;
+      text-align: center;
+    }
+    #feedback {
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: #133;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Graphique Loi d'Ohm</h1>
+
+  <div class="controls">
+    <label for="resistance">Réglage de la Résistance (Ω) : </label>
+    <input type="range" id="resistanceSlider" min="1" max="100" value="10" step="1" onchange="updateGraph()">
+    <span id="resistanceValue">10 Ω</span>
+  </div>
+
+  <canvas id="ohmGraph" width="600" height="400"></canvas>
+  <div id="feedback"></div>
+
+  <script>
+    // Fonction pour dessiner la courbe de la loi d'Ohm avec les axes gradués
+    function drawGraph(resistance) {
+      const canvas = document.getElementById("ohmGraph");
+      const ctx = canvas.getContext("2d");
+
+      // Effacer le canvas avant de redessiner
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Définir l'échelle
+      const scaleX = 50; // Espace pour l'axe des X
+      const scaleY = 30; // Espace pour l'axe des Y
+
+      // Tracer les axes X et Y
+      ctx.beginPath();
+      ctx.moveTo(50, 20);  // Début de l'axe vertical (V)
+      ctx.lineTo(50, 380);  // Axe vertical (V)
+      ctx.lineTo(550, 380); // Axe horizontal (I)
+      ctx.stroke();
+
+      // Ajouter des labels aux axes
+      ctx.font = "14px Arial";
+      ctx.fillText("Courant (I) en A", 460, 370);
+      ctx.fillText("Tension (V) en V", 10, 20);
+
+      // Tracer la graduation de l'axe des X (courant)
+      for (let i = 0; i <= 5;i++) {
+        const current = i; // Valeur du courant de 0 à 5 A
+        ctx.beginPath();
+        ctx.moveTo(50 + i * 100, 380); // Placement des ticks sur l'axe des X
+        ctx.lineTo(50 + i * 100, 390);
+        ctx.stroke();
+        ctx.fillText(current, 50 + i * 100, 395);
+      }
+
+      // Tracer la graduation de l'axe des Y (tension)
+      for (let i = 0; i <= 5; i++) {
+        const tension = i * resistance; // Tension correspondant à la résistance
+        ctx.beginPath();
+        ctx.moveTo(45, 380 - i * scaleY); // Placement des ticks sur l'axe des Y
+        ctx.lineTo(50, 380 - i * scaleY);
+        ctx.stroke();
+        ctx.fillText(tension, 15, 380 - i * scaleY);
+      }
+
+      // Tracer la courbe : Relation V = I * R
+      ctx.beginPath();
+      ctx.moveTo(50, 380); // Point de départ
+      for (let i = 0; i <= 500; i++) {
+        let courant = i / 100; // Courant varie de 0 à 5 A
+        let tension = courant * resistance; // Calcul de la tension selon la loi d'Ohm
+        ctx.lineTo(50 + i, 380 - tension * 30); // Multiplier par 30 pour adapter à l'échelle du canvas
+      }
+      ctx.strokeStyle = "blue";
+      ctx.stroke();
+
+      // Appeler la fonction pour donner un retour IA
+      giveAIFeedback(resistance);
+    }
+
+    // Fonction pour donner un retour IA sur la courbe
+    function giveAIFeedback(resistance) {
+      const feedbackElement = document.getElementById("feedback");
+
+      let feedbackText = ` La courbe montre la relation entre la tension et le courant pour une résistance de ${resistance} Ω. `;
+      if (resistance < 10) {
+        feedbackText += "  La pente de la courbe est faible,  indiquant qu'une petite résistance permet à plus de courant de circuler.";
+      } else if (resistance > 20) {
+        feedbackText += " La pente de la courbe est plus raide, ce qui signifie qu'une résistance plus élevée limite davantage le passage du courant.";
+      } else {
+        feedbackText += " La pente de la courbe est modérée,ce qui montre un équilibre raisonnable entre la tension et le courant pour cette résistance.";
+      }
+
+      feedbackElement.textContent = feedbackText;
+    }
+
+    // Mettre à jour la courbe quand la résistance est modifiée via le slider
+    function updateGraph() {
+      const resistance = parseFloat(document.getElementById("resistanceSlider").value);
+      document.getElementById("resistanceValue").textContent = `${resistance} Ω`;  // Afficher la valeur actuelle de la résistance
+      drawGraph(resistance);
+    }
+
+    // Initialisation
+    window.onload = () => {
+      updateGraph(); // Initialiser le graphique avec la valeur de résistance par défaut
+    };
+  </script>
+
+</body>
+</html>
